@@ -1,11 +1,18 @@
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 from config.env import env_int, env_str
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
 INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
     "django.contrib.staticfiles",
     "apps.core",
     "apps.accounts",
@@ -18,8 +25,11 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -32,7 +42,11 @@ TEMPLATES = [
         "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
-            "context_processors": ["django.template.context_processors.request"],
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
         },
     },
 ]
@@ -57,6 +71,21 @@ TIME_ZONE = "Asia/Tehran"
 USE_I18N = True
 USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+AUTH_USER_MODEL = "accounts.User"
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
+# ASSUMPTION: The guest cart in Phase 5C relies on a 30-day session.
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30
+
+ADMIN_URL = env_str("DJANGO_ADMIN_URL", default="internal-admin/")
+if ADMIN_URL.startswith("/") or not ADMIN_URL.endswith("/"):
+    raise ImproperlyConfigured(
+        "DJANGO_ADMIN_URL must not start with '/' and must end with '/'."
+    )
 
 STATIC_URL = "static/"
 STATIC_ROOT = env_str("STATIC_ROOT", default=BASE_DIR / "staticfiles")

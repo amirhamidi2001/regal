@@ -1,5 +1,8 @@
 from django.urls import path
 
-from apps.core.views import healthz
+from apps.core.views import HomeView, healthz
 
-urlpatterns = [path("healthz/", healthz, name="healthz")]
+urlpatterns = [
+    path("", HomeView.as_view(), name="home"),
+    path("healthz/", healthz, name="healthz"),
+]

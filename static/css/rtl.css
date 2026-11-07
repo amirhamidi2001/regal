@@ -1,0 +1,257 @@
+/* Persian typography and minimal RTL foundations. Page direction is set in each HTML document. */
+:root {
+  --default-font: "Vazirmatn", "Tahoma", "Arial", sans-serif;
+  --heading-font: "Vazirmatn", "Tahoma", "Arial", sans-serif;
+  --nav-font: "Vazirmatn", "Tahoma", "Arial", sans-serif;
+}
+
+body {
+  font-family: var(--default-font);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--heading-font);
+}
+
+bdi,
+[dir="ltr"] {
+  unicode-bidi: isolate;
+}
+
+/* RTL corrections for rules in main.css that use physical left/right spacing. */
+.php-email-form .error-message {
+  text-align: start;
+}
+
+.footer .footer-main .footer-widget h4::after {
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+}
+
+.footer .footer-main .footer-contact .contact-item i,
+.footer .footer-main .app-buttons .app-btn i {
+  margin-inline-end: 0.75rem;
+  margin-inline-start: 0;
+}
+
+.footer .footer-main .footer-links li {
+  padding-inline-start: 15px;
+  padding-inline-end: 0;
+}
+
+.footer .footer-main .footer-links li::before {
+  content: "←";
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+}
+
+.page-title .breadcrumbs ol li + li {
+  padding-inline-start: 10px;
+  padding-inline-end: 0;
+}
+
+.page-title .breadcrumbs ol li + li::before {
+  padding-inline-end: 10px;
+  padding-inline-start: 0;
+}
+
+.mobile-nav-toggle {
+  margin-inline-start: 10px;
+  margin-inline-end: 0;
+}
+
+.navmenu a i,
+.navmenu a:focus i {
+  margin-inline-start: 5px;
+  margin-inline-end: 0;
+}
+
+@media (min-width: 1200px) {
+  .navmenu li:first-child > a {
+    padding-inline-start: 0;
+    padding-inline-end: 15px;
+  }
+
+  .navmenu .dropdown ul {
+    inset-inline-start: 14px;
+    inset-inline-end: auto;
+  }
+
+  .navmenu .dropdown .dropdown ul,
+  .navmenu .dropdown .dropdown:hover > ul {
+    inset-inline-start: auto;
+    inset-inline-end: 100%;
+  }
+}
+
+.category-header .filter-container .active-filters .filter-tag .filter-remove,
+.search-results-header .search-filters .filter-tag i {
+  margin-inline-start: 0.35rem;
+  margin-inline-end: 0;
+}
+
+.category-header .filter-container .active-filters .clear-all-btn {
+  margin-inline-start: auto;
+  margin-inline-end: 0;
+}
+
+@media (max-width: 767.98px) {
+  .category-header .filter-container .active-filters .clear-all-btn {
+    margin-inline-start: 0;
+  }
+}
+
+.best-sellers .product-badge,
+.cards .product-card .product-image .product-badges,
+.call-to-action .product-showcase .product-image .discount-badge,
+.category-product-list .product-badge,
+.search-product-list .product-badge {
+  inset-inline-start: 1rem;
+  inset-inline-end: auto;
+}
+
+.best-sellers .product-actions,
+.category-product-list .product-actions,
+.search-product-list .product-actions {
+  inset-inline-start: auto;
+  inset-inline-end: 1rem;
+}
+
+.call-to-action .product-showcase .product-image .discount-badge {
+  inset-inline-start: 12px;
+}
+
+.product-details .info-tabs-container .technical-content .tech-group .spec-table .spec-row .spec-value,
+.product-details .info-tabs-container .reviews-content .reviews-header .rating-distribution .rating-row .count-label {
+  text-align: start;
+}
+
+.category-header .filter-container .filter-item.search-form .input-group .form-control,
+.search-results-header .search-form .form-control,
+.cart .cart-items .cart-actions .coupon-form .input-group .form-control,
+.checkout .order-summary .order-summary-content .promo-code .input-group .form-control {
+  border-right: 1px solid var(--bs-border-color, #dee2e6);
+  border-left: 0;
+}
+
+.cart .cart-items .cart-actions .coupon-form .input-group .btn,
+.checkout .order-summary .order-summary-content .promo-code .input-group .btn {
+  border-left: 1px solid var(--bs-border-color, #dee2e6);
+  border-right: 0;
+}
+
+.cart .cart-items .cart-item .product-info .product-image,
+.order-confirmation .main-content .details-card .card-body .item .item-image {
+  margin-inline-end: 1rem;
+  margin-inline-start: 0;
+}
+
+.checkout .checkout-section .section-content .form-group .form-select {
+  background-position: left 16px center;
+  padding-inline-start: 0.75rem;
+  padding-inline-end: 40px;
+}
+
+.checkout .checkout-section .section-content .form-group .card-number-wrapper .card-icons,
+.checkout .checkout-section .section-content .form-group .cvv-wrapper .cvv-hint {
+  inset-inline-start: auto;
+  inset-inline-end: 16px;
+}
+
+.checkout .checkout-section .section-content .form-group .card-number-wrapper input {
+  padding-inline-start: 0.75rem;
+  padding-inline-end: 80px;
+}
+
+.checkout .checkout-section .section-content .form-check,
+.register form .form-check {
+  padding-inline-start: 1.8rem;
+  padding-inline-end: 0;
+}
+
+.checkout .checkout-section .section-content .form-check .form-check-input,
+.register form .form-check .form-check-input {
+  float: right;
+  margin-inline-start: -1.8rem;
+  margin-inline-end: 0;
+}
+
+.order-confirmation .main-content .details-card .card-header h3 i,
+.order-confirmation .main-content .details-card .card-body .contact-info p i,
+.order-confirmation .main-content .details-card .card-body .payment-method .payment-icon,
+.order-confirmation .main-content .details-card .card-body .item .item-details .item-meta span {
+  margin-inline-end: 0.75rem;
+  margin-inline-start: 0;
+}
+
+.order-confirmation .main-content .action-area .btn.btn-back i {
+  margin-inline-end: 0.75rem;
+  margin-inline-start: 0;
+}
+
+.order-confirmation .main-content .action-area .btn.btn-account i {
+  margin-inline-start: 0.75rem;
+  margin-inline-end: 0;
+}
+
+.account .profile-menu .menu-nav .nav-link i,
+.account .profile-menu .menu-footer a i {
+  margin-inline-end: 12px;
+  margin-inline-start: 0;
+}
+
+.account .profile-menu .menu-nav .nav-link .badge {
+  margin-inline-start: auto;
+  margin-inline-end: 0;
+}
+
+.login .form-options .remember-me input[type="checkbox"]:checked::after {
+  inset-inline-start: 5px;
+  inset-inline-end: auto;
+}
+
+.login .switch-form .switch-btn {
+  margin-inline-start: 0;
+  margin-inline-end: 5px;
+}
+
+/* Keep Promo Cards copy in the colored panel instead of over the photo. */
+.promo-cards .category-featured .category-image {
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  width: 45%;
+}
+
+.promo-cards .category-featured .category-content {
+  max-width: 55%;
+}
+
+.promo-cards .category-card .category-image {
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  width: 45%;
+}
+
+.promo-cards .category-card .category-content {
+  width: 55%;
+}
+
+@media (max-width: 767.98px) {
+  .promo-cards .category-featured .category-image {
+    position: relative;
+    inset-inline-start: auto;
+    inset-inline-end: auto;
+    width: 100%;
+    height: 250px;
+  }
+
+  .promo-cards .category-featured .category-content {
+    width: 100%;
+    max-width: 100%;
+  }
+}

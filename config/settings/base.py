@@ -90,6 +90,15 @@ if ADMIN_URL.startswith("/") or not ADMIN_URL.endswith("/"):
 STATIC_URL = "static/"
 STATIC_ROOT = env_str("STATIC_ROOT", default=BASE_DIR / "staticfiles")
 STATICFILES_DIRS = [BASE_DIR / "static"]
+MEDIA_URL = env_str("MEDIA_URL", default="/media/")
+MEDIA_ROOT = env_str("MEDIA_ROOT", default=BASE_DIR / "media")
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    # ASSUMPTION: Static asset URLs remain unhashed for Nginx's shared static volume.
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 _log_level = env_str("DJANGO_LOG_LEVEL", default="INFO")
 LOGGING = {

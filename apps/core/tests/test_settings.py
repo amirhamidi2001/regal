@@ -18,6 +18,11 @@ VALID_PROD_ENV = {
     **BASE_ENV,
     "DJANGO_SECRET_KEY": "s" * 64,
     "DJANGO_ALLOWED_HOSTS": "example.com",
+    "S3_ENDPOINT_URL": "https://s3.example.com",
+    "S3_ACCESS_KEY_ID": "placeholder-key",
+    "S3_SECRET_ACCESS_KEY": "placeholder-secret",
+    "S3_BUCKET_NAME": "regal-media",
+    "S3_PUBLIC_BASE_URL": "https://media.example.com",
 }
 
 

@@ -1,4 +1,5 @@
 from django.core.exceptions import ImproperlyConfigured
+from urllib.parse import urlsplit
 
 from config.env import env_bool, env_list, env_str
 from config.settings.base import *  # noqa: F403
@@ -30,3 +31,33 @@ X_FRAME_OPTIONS = "DENY"
 SECURE_REFERRER_POLICY = "same-origin"
 # HSTS includeSubDomains and preload are deliberate owner decisions deferred to Phase 10.
 SILENCED_SYSTEM_CHECKS = ["security.W005", "security.W021"]
+
+S3_ENDPOINT_URL = env_str("S3_ENDPOINT_URL", required=True)
+S3_ACCESS_KEY_ID = env_str("S3_ACCESS_KEY_ID", required=True)
+S3_SECRET_ACCESS_KEY = env_str("S3_SECRET_ACCESS_KEY", required=True)
+S3_BUCKET_NAME = env_str("S3_BUCKET_NAME", required=True)
+S3_PUBLIC_BASE_URL = env_str("S3_PUBLIC_BASE_URL", required=True)
+S3_REGION_NAME = env_str("S3_REGION_NAME", default=None)
+S3_ADDRESSING_STYLE = env_str("S3_ADDRESSING_STYLE", default="auto")
+
+_public_url = urlsplit(S3_PUBLIC_BASE_URL)
+_s3_storage_options = {
+    "bucket_name": S3_BUCKET_NAME,
+    "endpoint_url": S3_ENDPOINT_URL,
+    "access_key": S3_ACCESS_KEY_ID,
+    "secret_key": S3_SECRET_ACCESS_KEY,
+    "addressing_style": S3_ADDRESSING_STYLE,
+    "querystring_auth": False,
+    "default_acl": None,
+    "file_overwrite": False,
+    "custom_domain": _public_url.netloc + _public_url.path,
+    "url_protocol": f"{_public_url.scheme}:",
+}
+if S3_REGION_NAME:
+    _s3_storage_options["region_name"] = S3_REGION_NAME
+
+STORAGES["default"] = {
+    "BACKEND": "storages.backends.s3.S3Storage",
+    "OPTIONS": _s3_storage_options,
+}
+MEDIA_URL = S3_PUBLIC_BASE_URL + "/"

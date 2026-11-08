@@ -133,3 +133,55 @@ class VariantAttribute(TimeStampedModel):
 
     def __str__(self):
         return f"{self.name}: {self.value}"
+
+
+class PricingTier(TimeStampedModel):
+    variant = models.ForeignKey(
+        ProductVariant,
+        on_delete=models.CASCADE,
+        related_name="pricing_tiers",
+        verbose_name="گونه محصول",
+    )
+    min_quantity = models.PositiveIntegerField(verbose_name="حداقل تعداد")
+    max_quantity = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="حداکثر تعداد",
+    )
+    markup_percent = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        verbose_name="درصد افزایش قیمت",
+    )
+
+    class Meta:
+        verbose_name = "پله قیمت‌گذاری"
+        verbose_name_plural = "پله‌های قیمت‌گذاری"
+        ordering = ("variant", "min_quantity")
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(min_quantity__gte=1),
+                name="catalog_pricingtier_min_gte_1",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(max_quantity__isnull=True)
+                | models.Q(max_quantity__gte=models.F("min_quantity")),
+                name="catalog_pricingtier_max_gte_min",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(markup_percent__gte=0),
+                name="catalog_pricingtier_markup_gte_0",
+            ),
+            models.UniqueConstraint(
+                fields=("variant", "min_quantity"),
+                name="catalog_pricingtier_unique_variant_min",
+            ),
+            models.UniqueConstraint(
+                fields=("variant",),
+                condition=models.Q(max_quantity__isnull=True),
+                name="catalog_pricingtier_one_unlimited_per_variant",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.variant}: {self.min_quantity}–{self.max_quantity or '∞'}"

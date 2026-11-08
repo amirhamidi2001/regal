@@ -48,6 +48,10 @@ docker compose exec web python manage.py test
 
 See [Developer setup](docs/DEV_SETUP.md) for local test instructions and environment variables.
 
+## Phase 4: catalog, pricing, and inventory
+
+The catalog stores integer-Toman prices, quantity-based `Decimal` markup tiers, and append-only stock history. Catalog pricing and stock changes must use the service APIs in `apps/catalog/pricing.py` and `apps/catalog/inventory.py`. See [Pricing and inventory](docs/PRICING_AND_INVENTORY.md) for rounding, tier rules, inventory behavior, image limits, and the public service API.
+
 ## Development server
 
 The development override is loaded only when named explicitly with `-f`:

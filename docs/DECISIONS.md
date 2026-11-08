@@ -25,3 +25,29 @@ All items are open and record assumptions or decisions requiring owner approval.
 | P3-19 | ASSUMPTION | `SESSION_COOKIE_AGE` is 30 days for the guest cart. | open |
 | P3-20 | ASSUMPTION | `django-storages` 1.14.6 uses `bucket_name`, `endpoint_url`, `access_key`, `secret_key`, optional `region_name`, `addressing_style`, `querystring_auth`, `default_acl`, `file_overwrite`, `custom_domain`, and `url_protocol`; addressing defaults to `auto`. These names were checked against the installed 1.14.6 source. | open |
 | P3-21 | NEEDS APPROVAL | Production S3 storage has not been manually verified against a real bucket. | open |
+
+## Phase 4 decisions log
+
+| ID | Label | Item | Status |
+| --- | --- | --- | --- |
+| P4-1 | ASSUMPTION | Phase 3 is approved as built. | open |
+| P4-2 | ASSUMPTION | Catalog constants live in `apps/catalog/constants.py`. | open |
+| P4-3 | ASSUMPTION | `MAX_BASE_PRICE` is 100,000,000,000 Toman and `MAX_QUANTITY` is 1,000,000; larger values need owner approval. | open |
+| P4-4 | ASSUMPTION | Catalog lifecycle services live in `apps/catalog/services.py`. | open |
+| P4-5 | ASSUMPTION | `StockLog.order_id` stays a plain integer until Phase 6A. | open |
+| P4-6 | ASSUMPTION | StockLog immutability is enforced in Python. | open |
+| P4-7 | ASSUMPTION | SKUs are trimmed and upper-case on save. | open |
+| P4-8 | ASSUMPTION | New variants are inactive and products default to draft. | open |
+| P4-9 | ASSUMPTION | Category slugs are unique Unicode values; categories have no depth limit and moves are cycle-checked. | open |
+| P4-10 | ASSUMPTION | A simple product is derived from its variants and attributes; no flag is stored. | open |
+| P4-11 | ASSUMPTION | Markup is from 0 through 999.99 with at most two decimal places. | open |
+| P4-12 | ASSUMPTION | Inventory functions do not check variant activity or product status. | open |
+| P4-13 | ASSUMPTION | Image limits and derivatives are 5 MiB, 40,000,000 pixels, JPEG/PNG/WebP, 480/960-pixel WebP derivatives at quality 82. | open |
+| P4-14 | ASSUMPTION | Pillow is pinned to version 13.0.0. | open |
+| P4-15 | NEEDS APPROVAL | Proposal R4: read-only catalog admin and development seed command. Keep open unless Prompts 8 and 9 were executed with owner approval. | open |
+| P4-16 | ASSUMPTION | `verify_stock_log` is a diagnostic valid only for stock initially at zero and exclusively changed through `inventory.py`. | open |
+| P4-17 | ASSUMPTION | Architecture guard tests enforce catalog stock, tier, log, and numeric boundaries. | open |
+| P4-18 | ASSUMPTION | `conflict_resolution` is a reserved StockLog reason, unused until Phase 6C. | open |
+| P4-19 | ASSUMPTION | `get_purchase_problem` is implemented in `apps/catalog/services.py`. | open |
+| P4-20 | ASSUMPTION | `adjust_manual` allows `actor=None` for the system; permission checks belong to the Phase 8 dashboard. | open |
+| P4-21 | ASSUMPTION | Inactive categories hide their subtree in `build_category_tree`, and inactive ancestors make a product unpurchasable. | open |

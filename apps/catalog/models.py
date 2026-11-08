@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 
@@ -185,3 +186,80 @@ class PricingTier(TimeStampedModel):
 
     def __str__(self):
         return f"{self.variant}: {self.min_quantity}–{self.max_quantity or '∞'}"
+
+
+class ImmutableLogError(RuntimeError):
+    """Raised when application code attempts to change an existing stock log."""
+
+
+class StockLogQuerySet(models.QuerySet):
+    def update(self, **kwargs):
+        raise ImmutableLogError("Stock log rows are append-only.")
+
+    def delete(self):
+        raise ImmutableLogError("Stock log rows are append-only.")
+
+    def bulk_update(self, objs, fields, batch_size=None):
+        raise ImmutableLogError("Stock log rows are append-only.")
+
+
+class StockLog(models.Model):
+    class Reason(models.TextChoices):
+        ORDER_PAID = "order_paid", "پرداخت سفارش"
+        ORDER_CANCELLED = "order_cancelled", "لغو سفارش"
+        MANUAL_ADJUSTMENT = "manual_adjustment", "اصلاح دستی موجودی"
+        CONFLICT_RESOLUTION = "conflict_resolution", "رفع مغایرت"
+
+    variant = models.ForeignKey(
+        ProductVariant,
+        on_delete=models.PROTECT,
+        related_name="stock_logs",
+        verbose_name="گونه محصول",
+    )
+    previous_quantity = models.PositiveIntegerField(verbose_name="موجودی پیشین")
+    change = models.IntegerField(verbose_name="تغییر موجودی")
+    new_quantity = models.PositiveIntegerField(verbose_name="موجودی جدید")
+    reason = models.CharField(max_length=32, choices=Reason, verbose_name="دلیل")
+    # ASSUMPTION: This stays an integer until Phase 6A converts it to a ForeignKey named order; orders has no model yet.
+    order_id = models.PositiveBigIntegerField(null=True, blank=True, verbose_name="شناسه سفارش")
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="stock_logs",
+        verbose_name="کاربر انجام‌دهنده",
+    )
+    note = models.CharField(max_length=255, blank=True, verbose_name="یادداشت")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ثبت")
+
+    objects = StockLogQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = "گزارش تغییر موجودی"
+        verbose_name_plural = "گزارش‌های تغییر موجودی"
+        constraints = [
+            models.CheckConstraint(
+                condition=~models.Q(change=0),
+                name="catalog_stocklog_change_nonzero",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(new_quantity=models.F("previous_quantity") + models.F("change")),
+                name="catalog_stocklog_arithmetic",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=("variant", "created_at")),
+            models.Index(fields=("order_id",)),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None and type(self).objects.filter(pk=self.pk).exists():
+            raise ImmutableLogError("Stock log rows are append-only.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ImmutableLogError("Stock log rows are append-only.")
+
+    def __str__(self):
+        return f"{self.variant_id}: {self.previous_quantity} → {self.new_quantity}"

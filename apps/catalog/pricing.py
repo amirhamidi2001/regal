@@ -163,3 +163,50 @@ def default_tier_specs():
         TierSpec(minimum, maximum, Decimal(markup))
         for minimum, maximum, markup in DEFAULT_TIER_TUPLES
     )
+
+
+def tier_specs_for(variant):
+    """Load a variant's tiers, respecting an already populated prefetch cache."""
+    tiers = variant.pricing_tiers.all()
+    return tuple(
+        TierSpec(tier.min_quantity, tier.max_quantity, tier.markup_percent)
+        for tier in sorted(tiers, key=lambda tier: tier.min_quantity)
+    )
+
+
+def quote(variant, quantity):
+    """Return the authoritative price for this variant and quantity."""
+    return quote_from_specs(variant.base_price, tier_specs_for(variant), quantity)
+
+
+def has_valid_pricing(variant):
+    try:
+        validate_tier_specs(tier_specs_for(variant))
+    except InvalidTierSet:
+        return False
+    return True
+
+
+def replace_pricing_tiers(variant, specs=None):
+    """Atomically replace a variant's complete pricing tier set."""
+    tier_specs = validate_tier_specs(default_tier_specs() if specs is None else specs)
+
+    from django.db import transaction
+
+    from apps.catalog.models import PricingTier, ProductVariant
+
+    with transaction.atomic():
+        locked_variant = ProductVariant.objects.select_for_update().get(pk=variant.pk)
+        PricingTier.objects.filter(variant_id=locked_variant.pk).delete()
+        created = PricingTier.objects.bulk_create(
+            [
+                PricingTier(
+                    variant=locked_variant,
+                    min_quantity=tier.min_quantity,
+                    max_quantity=tier.max_quantity,
+                    markup_percent=tier.markup_percent,
+                )
+                for tier in tier_specs
+            ]
+        )
+        return created

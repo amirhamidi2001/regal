@@ -3,6 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator, RegexVa
 from django.db import models
 
 from apps.catalog.constants import MAX_BASE_PRICE
+from apps.catalog.images import validate_uploaded_image
 from apps.core.models import TimeStampedModel
 
 
@@ -52,6 +53,12 @@ class Product(TimeStampedModel):
     )
     short_description = models.CharField(max_length=300, blank=True, verbose_name="توضیح کوتاه")
     description = models.TextField(blank=True, verbose_name="توضیحات")
+    main_image = models.ImageField(
+        upload_to="products/main/%Y/%m/",
+        blank=True,
+        validators=[validate_uploaded_image],
+        verbose_name="تصویر اصلی",
+    )
     status = models.CharField(
         max_length=12,
         choices=Status,
@@ -67,6 +74,33 @@ class Product(TimeStampedModel):
 
     def __str__(self):
         return self.name
+
+
+class ProductImage(TimeStampedModel):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="gallery_images",
+        verbose_name="محصول",
+    )
+    image = models.ImageField(
+        upload_to="products/gallery/%Y/%m/",
+        validators=[validate_uploaded_image],
+        verbose_name="تصویر",
+    )
+    alt = models.CharField(max_length=200, blank=True, verbose_name="متن جایگزین")
+    sort_order = models.PositiveIntegerField(default=0, verbose_name="ترتیب نمایش")
+
+    class Meta:
+        verbose_name = "تصویر گالری محصول"
+        verbose_name_plural = "تصاویر گالری محصول"
+        ordering = ("sort_order", "id")
+
+    def __str__(self):
+        return self.alt or str(self.image)
+
+
+# ASSUMPTION P4-13: Deleting product image rows leaves files in storage until a cleanup policy is decided later.
 
 
 class ProductVariant(TimeStampedModel):

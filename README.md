@@ -50,7 +50,7 @@ See [Developer setup](docs/DEV_SETUP.md) for local test instructions and environ
 
 ## Phase 4: catalog, pricing, and inventory
 
-The catalog stores integer-Toman prices, quantity-based `Decimal` markup tiers, and append-only stock history. Catalog pricing and stock changes must use the service APIs in `apps/catalog/pricing.py` and `apps/catalog/inventory.py`. See [Pricing and inventory](docs/PRICING_AND_INVENTORY.md) for rounding, tier rules, inventory behavior, image limits, and the public service API.
+The catalog stores integer-Toman prices, quantity-based `Decimal` markup tiers, and append-only stock history. Catalog pricing and stock changes must use the service APIs in `apps/catalog/pricing.py` and `apps/catalog/inventory.py`. Catalog admin pages are read-only; the `seed_demo_data` command is DEBUG-only and requires the development override. See [Pricing and inventory](docs/PRICING_AND_INVENTORY.md) for rounding, tier rules, inventory behavior, image limits, and the public service API.
 
 ## Development server
 
@@ -69,7 +69,7 @@ The development server is reachable at <http://127.0.0.1:8000>. The override sel
 - `deploy/`: container entrypoint and Nginx configuration
 - `static/`: copied template assets served by Nginx
 - `templates/`: Django templates
-- `docs/`: setup notes and the Phase 3 decision log
+- `docs/`: setup notes and the Phase 3/4 decision log
 
 ## Architectural rules
 

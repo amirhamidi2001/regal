@@ -44,7 +44,7 @@ All items are open and record assumptions or decisions requiring owner approval.
 | P4-12 | ASSUMPTION | Inventory functions do not check variant activity or product status. | open |
 | P4-13 | ASSUMPTION | Image limits and derivatives are 5 MiB, 40,000,000 pixels, JPEG/PNG/WebP, 480/960-pixel WebP derivatives at quality 82. | open |
 | P4-14 | ASSUMPTION | Pillow is pinned to version 13.0.0. | open |
-| P4-15 | NEEDS APPROVAL | Proposal R4: read-only catalog admin and development seed command. Keep open unless Prompts 8 and 9 were executed with owner approval. | open |
+| P4-15 | NEEDS APPROVAL | R4 (option A) approved; read-only catalog admin and DEBUG-only, idempotent seed command implemented by Prompts 8 and 9. | resolved |
 | P4-16 | ASSUMPTION | `verify_stock_log` is a diagnostic valid only for stock initially at zero and exclusively changed through `inventory.py`. | open |
 | P4-17 | ASSUMPTION | Architecture guard tests enforce catalog stock, tier, log, and numeric boundaries. | open |
 | P4-18 | ASSUMPTION | `conflict_resolution` is a reserved StockLog reason, unused until Phase 6C. | open |

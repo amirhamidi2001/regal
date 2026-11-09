@@ -52,7 +52,7 @@ def scan_stock_writes(source):
                 keyword.arg == "stock_quantity" for keyword in node.keywords
             ):
                 violations.append(node.lineno)
-            if isinstance(node.func, ast.Name) and node.func.id == "F" and node.args:
+            if _dotted_name(node.func).split(".")[-1] == "F" and node.args:
                 argument = node.args[0]
                 if (
                     isinstance(argument, ast.Constant) and argument.value == "stock_quantity"
@@ -81,10 +81,37 @@ def scan_pricing_tier_writes(source):
 def scan_stocklog_creations(source):
     tree = ast.parse(source)
     violations = []
+    parents = {
+        child: parent
+        for parent in ast.walk(tree)
+        for child in ast.iter_child_nodes(parent)
+    }
+    constructed_names = set()
+
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
         if isinstance(node.func, ast.Name) and node.func.id == "StockLog":
+            parent = parents.get(node)
+            if (
+                isinstance(parent, ast.Attribute)
+                and parent.attr == "save"
+                and isinstance(parents.get(parent), ast.Call)
+                and parents[parent].func is parent
+            ):
+                violations.append(node.lineno)
+            elif isinstance(parent, (ast.Assign, ast.AnnAssign)):
+                targets = parent.targets if isinstance(parent, ast.Assign) else [parent.target]
+                constructed_names.update(
+                    target.id for target in targets if isinstance(target, ast.Name)
+                )
+            continue
+        if (
+            isinstance(node.func, ast.Attribute)
+            and node.func.attr == "save"
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id in constructed_names
+        ):
             violations.append(node.lineno)
             continue
         if isinstance(node.func, ast.Attribute) and node.func.attr in {"create", "bulk_create"}:
@@ -106,12 +133,22 @@ def scan_pricing_imports(source):
         visit_ClassDef = visit_FunctionDef
 
         def visit_Import(self, node):
-            if any(alias.name == "django.db" or alias.name.startswith("django.db.") for alias in node.names):
+            if any(
+                alias.name == "django.db"
+                or alias.name.startswith("django.db.")
+                or alias.name == "apps.catalog.models"
+                for alias in node.names
+            ):
                 violations.append(node.lineno)
 
         def visit_ImportFrom(self, node):
             module = node.module or ""
-            if module == "django.db" or module.startswith("django.db.") or module == "apps.catalog.models":
+            if (
+                module == "django.db"
+                or module.startswith("django.db.")
+                or module == "apps.catalog.models"
+                or (node.level and any(alias.name == "models" for alias in node.names))
+            ):
                 violations.append(node.lineno)
 
     scanner = ModuleImportScanner()
@@ -155,18 +192,26 @@ class ArchitectureGuardScannerTests(SimpleTestCase):
         self.assertEqual(len(scan_pricing_tier_writes(bad)), 2)
 
     def test_stocklog_scanner_detects_manager_and_instance_creation(self):
-        good = "StockLog.objects.filter(pk=1)\n"
-        bad = "StockLog.objects.bulk_create(rows)\nentry = StockLog(change=1)\n"
+        good = "StockLog.objects.filter(pk=1)\nentry = StockLog(change=1)\n"
+        bad = (
+            "StockLog.objects.bulk_create(rows)\n"
+            "StockLog(change=1).save()\n"
+            "entry = StockLog(change=2)\nentry.save()\n"
+        )
         self.assertEqual(scan_stocklog_creations(good), [])
-        self.assertEqual(len(scan_stocklog_creations(bad)), 2)
+        self.assertEqual(len(scan_stocklog_creations(bad)), 3)
 
     def test_import_and_float_scanners_detect_bad_source(self):
         good_import = "def f():\n    from apps.catalog.models import Product\n"
-        bad_import = "if True:\n    import django.db.models\n"
+        bad_import = (
+            "if True:\n    import django.db.models\n"
+            "import apps.catalog.models\n"
+            "from . import models\n"
+        )
         good_numeric = "price = 100\n"
         bad_numeric = "ratio = 1.5\nvalue = float('2')\n"
         self.assertEqual(scan_pricing_imports(good_import), [])
-        self.assertEqual(len(scan_pricing_imports(bad_import)), 1)
+        self.assertEqual(len(scan_pricing_imports(bad_import)), 3)
         self.assertEqual(scan_float_usage(good_numeric), [])
         self.assertEqual(len(scan_float_usage(bad_numeric)), 2)
 
